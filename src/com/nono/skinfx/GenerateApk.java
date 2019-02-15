@@ -12,6 +12,7 @@ import java.io.IOException;
 
 /**
  * Created by wl on 2019/2/14.
+ * 单独的Skin生成对象
  */
 public class GenerateApk {
 
@@ -37,6 +38,9 @@ public class GenerateApk {
         this.skinApk.setProjectDir(projectDir);
     }
 
+    /**
+     * 复制基础工程到skin目录
+     */
     private void resetBaseFiles() {
         try {
             FileUtils.copyDirectory(new File(baseFolder), skinApk.getProjectDir(), new FileFilter() {
@@ -54,6 +58,10 @@ public class GenerateApk {
         }
     }
 
+    /**
+     * 生成Apk
+     * @param callback
+     */
     public void generate(GenerateApkManager.Callback callback) {
         this.callback = callback;
 
@@ -63,6 +71,9 @@ public class GenerateApk {
         generateApk();
     }
 
+    /**
+     * 重新设置新的skin的颜色值
+     */
     private void resetColor() {
         try {
             String colorResPath = skinApk.getProjectDir() + colorPath;
@@ -86,6 +97,9 @@ public class GenerateApk {
         }
     }
 
+    /**
+     * 复制基础项目文件 -> 并创建新的skin临时项目(并发生成Apk)
+     */
     private void resetResFiles() {
         File copyResourceFolder = skinApk.getCopyResourceFolder();
         try {
@@ -96,6 +110,8 @@ public class GenerateApk {
     }
 
     /**
+     * 生成Apk文件，要特别注意其中的坑。
+     *
      * gradlew.bat clean
      * gradlew.bat clean assembleDebug
      *
@@ -140,6 +156,9 @@ public class GenerateApk {
         }, cmd);
     }
 
+    /**
+     * 任务完成后的回调UI处理
+     */
     private void handleComplete() {
         Platform.runLater(new Runnable() {
             @Override
@@ -153,6 +172,9 @@ public class GenerateApk {
         });
     }
 
+    /**
+     * 输出Apk文件到指定目录中
+     */
     private void outputApkFile() {
         try {
             File outPutApk = new File(skinApk.getProjectDir(), "\\app\\build\\outputs\\apk\\debug\\app-debug.apk");
@@ -162,6 +184,12 @@ public class GenerateApk {
         }
     }
 
+    /**
+     * 换肤替换新值
+     * @param key
+     * @param newValue
+     * @return
+     */
     private GenerateApk replaceNewValue(String key, String newValue){
         String regexReplace = baseRegexString.replace("#key#", key);
         String template = String.format("<color name=\"%s\">#value#</color>", key);
