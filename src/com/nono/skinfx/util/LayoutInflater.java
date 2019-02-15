@@ -4,6 +4,9 @@ import java.net.URL;
 
 import javafx.fxml.FXMLLoader;
 
+/**
+ * Created by wl on 2019/2/14.
+ */
 public class LayoutInflater {
 
 	public static <T>T inflate(String viewName,Class<T> clazz){

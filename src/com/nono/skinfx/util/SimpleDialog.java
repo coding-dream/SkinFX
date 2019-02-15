@@ -6,6 +6,9 @@ import javafx.scene.control.Label;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+/**
+ * Created by wl on 2019/2/14.
+ */
 public class SimpleDialog {
 
     Parent root;

@@ -2,9 +2,16 @@ package com.nono.skinfx.util.cmd;
 
 import java.util.Arrays;
 
+/**
+ * Created by wl on 2019/2/14.
+ */
 public class RunTimeHelper {
 
-    public static void executeAndPrintLines(final String... commandAndArgs) {
+    public interface Callback {
+        void done();
+    }
+
+    public static void executeAndPrintLines(Callback callback, final String... commandAndArgs) {
         System.out.println("Execute: " + Arrays.asList(commandAndArgs));
         // コマンドをパースしてオブジェクト化
         final ExternalCommand cmd = ExternalCommand.parse(commandAndArgs);
@@ -23,5 +30,6 @@ public class RunTimeHelper {
             System.out.println("2>  " + line);
         }
         System.out.println();
+        callback.done();
     }
 }

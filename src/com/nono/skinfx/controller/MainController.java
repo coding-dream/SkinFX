@@ -6,6 +6,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
@@ -13,6 +14,9 @@ import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+/**
+ * Created by wl on 2019/2/14.
+ */
 public class MainController implements Initializable {
 
     @FXML
@@ -21,6 +25,8 @@ public class MainController implements Initializable {
     private TextField et_dst;
     @FXML
     private TextArea tv_log;
+    @FXML
+    ProgressIndicator progressIndicator;
 
     @FXML
     private Button btn_confirm;
@@ -28,6 +34,7 @@ public class MainController implements Initializable {
     private StringBuffer logBuffer = new StringBuffer();
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        progressIndicator.setVisible(false);
         mockData();
     }
 
@@ -40,8 +47,19 @@ public class MainController implements Initializable {
             simpleDialog.show("错误提示");
             return;
         }
-        GenerateApkManager generateApkManager = new GenerateApkManager(baseFolder, this);
-        generateApkManager.generate();
+        GenerateApkManager generateApkManager = new GenerateApkManager(baseFolder, dstFolder, this);
+        generateApkManager.generate(new GenerateApkManager.Callback() {
+            @Override
+            public void done() {
+                progressIndicator.setProgress(1f);
+            }
+        });
+
+        // 显示进度条
+        progressIndicator.setVisible(true);
+        progressIndicator.setProgress(-1f);
+        progressIndicator.setProgress(0.5f);
+        progressIndicator.setProgress(-1f);
     }
 
     private void mockData() {

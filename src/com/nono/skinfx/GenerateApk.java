@@ -1,34 +1,45 @@
 package com.nono.skinfx;
 
+import com.nono.skinfx.bean.SkinApk;
+import com.nono.skinfx.util.SimpleDialog;
 import com.nono.skinfx.util.cmd.RunTimeHelper;
+import javafx.application.Platform;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 
+/**
+ * Created by wl on 2019/2/14.
+ */
 public class GenerateApk {
 
     private String baseFolder;
-    private File tempRootDir;
     private SkinApk skinApk;
 
     private String resFolder = "\\app\\src\\main\\res\\drawable-xhdpi\\";
     private String colorPath = "\\app\\src\\main\\res\\values\\colors.xml";
 
-    private static final String regexReplace = "";
+    static String baseRegexString = "<color name\\s*=\\s*\"#key#\">(.+)</color>";
+
+    private String color_theme_background_color = "color_theme_background_color";
+    private String color_title_bar_bottom_separator = "color_title_bar_bottom_separator";
+    private String color_home_title_bg = "color_home_title_bg";
+
+    private String resultColorString;
+    private GenerateApkManager.Callback callback;
 
     public GenerateApk(File tempRootDir, String baseFolder, SkinApk skinApk) {
         this.baseFolder = baseFolder;
-        this.tempRootDir = tempRootDir;
         this.skinApk = skinApk;
-        File projectDir = new File(tempRootDir, skinApk.name);
+        File projectDir = new File(tempRootDir, skinApk.getName());
         this.skinApk.setProjectDir(projectDir);
     }
 
     private void resetBaseFiles() {
         try {
-            FileUtils.copyDirectory(new File(baseFolder), skinApk.projectDir, new FileFilter() {
+            FileUtils.copyDirectory(new File(baseFolder), skinApk.getProjectDir(), new FileFilter() {
                 @Override
                 public boolean accept(File pathname) {
                     String fileName = pathname.getName();
@@ -43,7 +54,9 @@ public class GenerateApk {
         }
     }
 
-    public void generate() {
+    public void generate(GenerateApkManager.Callback callback) {
+        this.callback = callback;
+
         resetBaseFiles();
         resetResFiles();
         resetColor();
@@ -51,8 +64,26 @@ public class GenerateApk {
     }
 
     private void resetColor() {
-        File colorXml = new File(skinApk.getProjectDir() + colorPath);
-        // 正则替换
+        try {
+            String colorResPath = skinApk.getProjectDir() + colorPath;
+            File originColorPath = new File(colorResPath);
+
+            resultColorString = FileUtils.readFileToString(originColorPath);
+
+            replaceNewValue(color_theme_background_color, skinApk.getColor());
+            // todo 优化：策略模式
+            if (skinApk.getFlag() == SkinApk.FLAG_NOMAL) {
+                replaceNewValue(color_title_bar_bottom_separator, skinApk.getColor());
+                replaceNewValue(color_home_title_bg, skinApk.getColor());
+            } else {
+                replaceNewValue(color_title_bar_bottom_separator, "#00000000");
+                replaceNewValue(color_home_title_bg, "#00000000");
+            }
+            System.out.println(resultColorString);
+            FileUtils.write(originColorPath, resultColorString);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void resetResFiles() {
@@ -96,6 +127,48 @@ public class GenerateApk {
         generateApkCmd.append(" " + skinApk.getProjectDir().getAbsolutePath());
         String cmd = generateApkCmd.toString();
         System.out.println(cmd);
-        RunTimeHelper.executeAndPrintLines(cmd);
+        RunTimeHelper.executeAndPrintLines(new RunTimeHelper.Callback() {
+            @Override
+            public void done() {
+                outputApkFile();
+
+                GlobalValueManager.getInstance().decreaseTaskCount();
+                if (GlobalValueManager.getInstance().getTaskCount() == 0) {
+                    handleComplete();
+                }
+            }
+        }, cmd);
+    }
+
+    private void handleComplete() {
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                if (callback != null) {
+                    callback.done();
+                }
+                SimpleDialog simpleDialog = new SimpleDialog("任务完成！");
+                simpleDialog.show("提示");
+            }
+        });
+    }
+
+    private void outputApkFile() {
+        try {
+            File outPutApk = new File(skinApk.getProjectDir(), "\\app\\build\\outputs\\apk\\debug\\app-debug.apk");
+            FileUtils.moveFile(outPutApk, skinApk.getDstFile());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private GenerateApk replaceNewValue(String key, String newValue){
+        String regexReplace = baseRegexString.replace("#key#", key);
+        String template = String.format("<color name=\"%s\">#value#</color>", key);
+        System.out.println("regexReplace: " + regexReplace + " template: " + template);
+        // 注意特殊字符的处理, 蛋疼的Java每次输出都会把类似\n等转为真正的换行到文本中.
+        String newResult = template.replace("#value#", newValue).replace("\n","\\n");
+        resultColorString = resultColorString.replaceFirst(regexReplace, newResult);
+        return this;
     }
 }
