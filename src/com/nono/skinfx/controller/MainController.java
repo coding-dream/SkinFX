@@ -2,6 +2,7 @@ package com.nono.skinfx.controller;
 
 import com.nono.skinfx.GenerateApkManager;
 import com.nono.skinfx.util.SimpleDialog;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -47,11 +48,22 @@ public class MainController implements Initializable {
             simpleDialog.show("错误提示");
             return;
         }
-        GenerateApkManager generateApkManager = new GenerateApkManager(baseFolder, dstFolder, this);
+        GenerateApkManager generateApkManager = new GenerateApkManager(baseFolder, dstFolder);
         generateApkManager.generate(new GenerateApkManager.Callback() {
             @Override
             public void done() {
                 progressIndicator.setProgress(1f);
+            }
+
+            @Override
+            public void message(final String log) {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        logBuffer.append(log).append("\r\n");
+                        tv_log.setText(logBuffer.toString());
+                    }
+                });
             }
         });
 
@@ -67,10 +79,5 @@ public class MainController implements Initializable {
         File originData = new File(data);
         et_base.setText(originData.getAbsolutePath());
         et_dst.setText(originData.getAbsolutePath() + "\\temp");
-    }
-
-    public void log(String log) {
-        logBuffer.append(log).append("\r\n");
-        tv_log.setText(logBuffer.toString());
     }
 }

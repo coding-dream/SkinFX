@@ -146,6 +146,7 @@ public class GenerateApk {
         RunTimeHelper.executeAndPrintLines(new RunTimeHelper.Callback() {
             @Override
             public void done() {
+                callback.message("命令处理: " + skinApk.getName() + " 创建完成！");
                 outputApkFile();
 
                 GlobalValueManager.getInstance().decreaseTaskCount();
@@ -178,6 +179,11 @@ public class GenerateApk {
     private void outputApkFile() {
         try {
             File outPutApk = new File(skinApk.getProjectDir(), "\\app\\build\\outputs\\apk\\debug\\app-debug.apk");
+            if (skinApk.getDstFile().exists()) {
+                boolean flag = skinApk.getDstFile().delete();
+                callback.message(skinApk.getName() + " 覆盖删除: " + flag);
+            }
+
             FileUtils.moveFile(outPutApk, skinApk.getDstFile());
         } catch (IOException e) {
             e.printStackTrace();

@@ -17,7 +17,6 @@ public class GenerateApkManager {
     private String baseFolder;
     private String dstFolder;
 
-    private MainController controller;
     private List<SkinApk> resourcesList = new ArrayList<SkinApk>();
     private static final String tempDeleteDir = "D:/tempDelete";
 
@@ -25,14 +24,14 @@ public class GenerateApkManager {
 
     public interface Callback {
         void done();
+        void message(String log);
     }
 
     File resourcesRoot;
 
-    public GenerateApkManager(String baseFolder, String dstFolder, MainController mainController) {
+    public GenerateApkManager(String baseFolder, String dstFolder) {
         this.baseFolder = baseFolder;
         this.dstFolder = dstFolder;
-        this.controller = mainController;
     }
 
     public void generate(Callback callback) {
@@ -83,7 +82,7 @@ public class GenerateApkManager {
             skinApk.setFlag(SkinApk.FLAG_IMAGE);
         }
 
-        controller.log(skinApk.toString());
+        callback.message(skinApk.toString());
         resourcesList.add(skinApk);
     }
 }
