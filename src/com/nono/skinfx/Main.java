@@ -14,7 +14,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         Parent root = LayoutInflater.inflate("main", Parent.class);
-        primaryStage.setTitle("Hello World");
+        primaryStage.setTitle("皮肤批量生成工具");
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
     }

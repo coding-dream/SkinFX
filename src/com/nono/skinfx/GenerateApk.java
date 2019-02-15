@@ -90,7 +90,6 @@ public class GenerateApk {
                 replaceNewValue(color_title_bar_bottom_separator, "#00000000");
                 replaceNewValue(color_home_title_bg, "#00000000");
             }
-            System.out.println(resultColorString);
             FileUtils.write(originColorPath, resultColorString);
         } catch (IOException e) {
             e.printStackTrace();
@@ -185,6 +184,11 @@ public class GenerateApk {
             }
 
             FileUtils.moveFile(outPutApk, skinApk.getDstFile());
+
+            // 删除临时目录
+            File tempDir = skinApk.getProjectDir();
+            FileUtils.forceDelete(tempDir);
+            callback.message("forceDelete: " + tempDir);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -199,7 +203,6 @@ public class GenerateApk {
     private GenerateApk replaceNewValue(String key, String newValue){
         String regexReplace = baseRegexString.replace("#key#", key);
         String template = String.format("<color name=\"%s\">#value#</color>", key);
-        System.out.println("regexReplace: " + regexReplace + " template: " + template);
         // 注意特殊字符的处理, 蛋疼的Java每次输出都会把类似\n等转为真正的换行到文本中.
         String newResult = template.replace("#value#", newValue).replace("\n","\\n");
         resultColorString = resultColorString.replaceFirst(regexReplace, newResult);

@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class DefaultTaskExecutor extends TaskExecutor {
-    private ExecutorService mDiskIO = Executors.newFixedThreadPool(2);
+    private ExecutorService mDiskIO = Executors.newFixedThreadPool(5);
 
     @Override
     public void executeOnDiskIO(Runnable runnable) {
