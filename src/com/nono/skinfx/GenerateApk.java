@@ -32,7 +32,7 @@ public class GenerateApk {
                 @Override
                 public boolean accept(File pathname) {
                     String fileName = pathname.getName();
-                    if (fileName.contains(".git") || fileName.contains("files")) {
+                    if (fileName.contains(".git") || fileName.contains("files") || fileName.equals("build")) {
                         return false;
                     }
                     return true;
@@ -47,7 +47,7 @@ public class GenerateApk {
         resetBaseFiles();
         resetResFiles();
         resetColor();
-        // generateApk();
+        generateApk();
     }
 
     private void resetColor() {
@@ -66,13 +66,33 @@ public class GenerateApk {
 
     /**
      * gradlew.bat clean
-     * gradlew.bat assembleDebug
+     * gradlew.bat clean assembleDebug
+     *
+     * java -version
+     * openjdk version "1.8.0_152-release"
+     * OpenJDK Runtime Environment (build 1.8.0_152-release-1136-b06)
+     * OpenJDK 64-Bit Server VM (build 25.152-b06, mixed mode)
+     *
+     * 在gradle.properties文件增加两行
+     * android.enableAapt2=false
+     * org.gradle.java.home=D:\\Program Files\\android-studio-ide-173.4697961-windows\\android-studio\\jre
+     *
+     * 注意此处潜藏的深坑：
+     * 1. Could not generate a proxy class for class com.android.build.gradle.tasks.BuildArtifactReportTask.
+     * 把gradle运行的JDK的版本更换为和Android Studio的一致（当前运行的环境如Android Studio，IDEA）
+     * 因为JavaFX已运行的JDK环境会被gradle脚本复用，需修改gradle.properties文件增加一行: org.gradle.java.home = D:\\Program Files\\android-studio-ide-173.4697961-windows\\android-studio\\jre
+     *
+     * 2. error: failed to create directory 'D:\xx\app\build\generated\source\r\debug\com.none.ss\skin'
+     * gradle.properties文件增加一行：android.enableAapt2=false
      */
     private void generateApk() {
         StringBuffer generateApkCmd = new StringBuffer();
+        System.setProperty("user.dir", skinApk.getProjectDir().getAbsolutePath());
+
         generateApkCmd.append("cmd /c ");
         generateApkCmd.append(skinApk.getProjectDir().getAbsolutePath() + "\\");
         generateApkCmd.append(Const.CMD_GENERATE_2);
+        generateApkCmd.append(" -p");
         generateApkCmd.append(" " + skinApk.getProjectDir().getAbsolutePath());
         String cmd = generateApkCmd.toString();
         System.out.println(cmd);
